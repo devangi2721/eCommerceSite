@@ -1,7 +1,8 @@
-'use client';
-import React, { useEffect, useState } from 'react';
+"use client";
+import React, { useEffect, useState } from "react";
+import { BASE_URL } from "../../constants/constant";
 
-const API_URL = 'http://localhost:5000/api/admin/orders';
+const API_URL = `${BASE_URL}/api/admin/orders`;
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
@@ -9,24 +10,22 @@ export default function AdminOrdersPage() {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-
   useEffect(() => {
     const fetchOrders = async () => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       try {
-        const response = await fetch(API_URL, {
+        const response = await fetch(API_URL, { 
           headers: token ? { 'Authorization': `Bearer ${token}` } : {},
           method: 'GET',
         });
         if (!response.ok) {
-          throw new Error('Failed to fetch orders');
+          throw new Error("Failed to fetch orders");
         }
         const data = await response.json();
-        console.log(data,"data from orders");
         setOrders(data);
       } catch (err) {
         setError(err.message);
-        console.error('Error fetching orders:', err);
+        console.error("Error fetching orders:", err);
       } finally {
         setLoading(false);
       }
@@ -38,16 +37,20 @@ export default function AdminOrdersPage() {
   const handleCancel = async (id) => {
     try {
       const response = await fetch(`${API_URL}/${id}/cancel`, {
-        method: 'PUT',
-        credentials: 'include',
+        method: "PUT",
+        credentials: "include",
       });
       if (!response.ok) {
-        throw new Error('Failed to cancel order');
+        throw new Error("Failed to cancel order");
       }
-      setOrders(orders => orders.map(order => order._id === id ? { ...order, status: 'cancelled' } : order));
+      setOrders((orders) =>
+        orders.map((order) =>
+          order._id === id ? { ...order, status: "cancelled" } : order
+        )
+      );
     } catch (err) {
-      console.error('Error cancelling order:', err);
-      alert('Failed to cancel order');
+      console.error("Error cancelling order:", err);
+      alert("Failed to cancel order");
     }
   };
 

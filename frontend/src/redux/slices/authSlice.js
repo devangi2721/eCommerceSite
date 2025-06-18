@@ -1,4 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { BASE_URL } from "../../app/constants/constant";
 
 const initialState = {
   token: null,
@@ -8,14 +9,14 @@ const initialState = {
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setCredentials: (state, action) => {
       const { token, user } = action.payload;
       state.token = token;
       state.user = user;
-      localStorage.setItem('token', token);
+      localStorage.setItem("token", token);
     },
     setLoading: (state, action) => {
       state.loading = action.payload;
@@ -30,14 +31,14 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
-        state.user = action.payload;
-      });
-  }
+    builder.addCase(fetchCurrentUser.fulfilled, (state, action) => {
+      state.user = action.payload;
+    });
+  },
 });
 
-export const { setCredentials, setLoading, setError, logout } = authSlice.actions;
+export const { setCredentials, setLoading, setError, logout } =
+  authSlice.actions;
 
 export default authSlice.reducer;
 
@@ -48,14 +49,14 @@ export const selectAuthLoading = (state) => state.auth.loading;
 export const selectAuthError = (state) => state.auth.error;
 
 export const fetchCurrentUser = createAsyncThunk(
-  'auth/fetchCurrentUser',
+  "auth/fetchCurrentUser",
   async () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return null;
-    const res = await fetch('http://localhost:5000/api/auth/me', {
-      headers: { Authorization: `Bearer ${token}` }
+    const res = await fetch(`${BASE_URL}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
     return await res.json();
   }
-); 
+);

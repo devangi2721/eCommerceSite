@@ -1,5 +1,6 @@
-'use client';
-import React, { useState, useEffect } from 'react';
+"use client";
+import React, { useState, useEffect } from "react";
+import { BASE_URL } from "../../constants/constant";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
@@ -7,7 +8,7 @@ export default function AdminUsersPage() {
   const [error, setError] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [token, setToken] = useState(null);
 
   // Move fetchUsers outside useEffect so it can be called anywhere
@@ -15,12 +16,12 @@ export default function AdminUsersPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('http://localhost:5000/api/admin/users', {
+      const res = await fetch(`${BASE_URL}/api/admin/users`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      if (!res.ok) throw new Error('Failed to fetch users');
+      if (!res.ok) throw new Error("Failed to fetch users");
       const data = await res.json();
       setUsers(data);
     } catch (err) {
@@ -31,7 +32,7 @@ export default function AdminUsersPage() {
   };
 
   useEffect(() => {
-    setToken(localStorage.getItem('token'));
+    setToken(localStorage.getItem("token"));
   }, []);
 
   useEffect(() => {
@@ -50,13 +51,13 @@ export default function AdminUsersPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${BASE_URL}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error('Failed to add user');
-      setForm({ name: '', email: '', password: '' });
+      if (!res.ok) throw new Error("Failed to add user");
+      setForm({ name: "", email: "", password: "" });
       setShowModal(false);
       await fetchUsers(token); // re-fetch the user list
     } catch (err) {
@@ -69,7 +70,7 @@ export default function AdminUsersPage() {
   // Edit user
   const handleEditUser = (user) => {
     setEditingUser(user);
-    setForm({ name: user.name, email: user.email, password: '' });
+    setForm({ name: user.name, email: user.email, password: "" });
     setShowModal(true);
   };
 
@@ -79,17 +80,26 @@ export default function AdminUsersPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`http://localhost:5000/api/admin/users/${editingUser._id || editingUser.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
-      });
-      if (!res.ok) throw new Error('Failed to update user');
+      const res = await fetch(
+        `${BASE_URL}/api/admin/users/${
+          editingUser._id || editingUser.id
+        }`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: form.name,
+            email: form.email,
+            password: form.password,
+          }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to update user");
       setEditingUser(null);
-      setForm({ name: '', email: '', password: '' });
+      setForm({ name: "", email: "", password: "" });
       setShowModal(false);
       await fetchUsers(token); // re-fetch the user list
     } catch (err) {
@@ -101,17 +111,17 @@ export default function AdminUsersPage() {
 
   // Delete user (soft delete)
   const handleDeleteUser = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`http://localhost:5000/api/admin/users/${id}`, {
-        method: 'DELETE',
+      const res = await fetch(`${BASE_URL}/api/admin/users/${id}`, {
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      if (!res.ok) throw new Error('Failed to delete user');
+      if (!res.ok) throw new Error("Failed to delete user");
       await fetchUsers(token); // re-fetch the user list
     } catch (err) {
       setError(err.message);
@@ -122,10 +132,16 @@ export default function AdminUsersPage() {
 
   return (
     <div className="mx-auto p-8 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold text-purple-600 mb-6">User Management</h1>
+      <h1 className="text-2xl font-bold text-purple-600 mb-6">
+        User Management
+      </h1>
       <div className="flex justify-end mb-6">
         <button
-          onClick={() => { setShowModal(true); setEditingUser(null); setForm({ name: '', email: '', password: '' }); }}
+          onClick={() => {
+            setShowModal(true);
+            setEditingUser(null);
+            setForm({ name: "", email: "", password: "" });
+          }}
           className="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
         >
           Add User
@@ -188,16 +204,23 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md relative">
             <button
-              onClick={() => { setShowModal(false); setEditingUser(null); setForm({ name: '', email: '', password: '' }); }}
+              onClick={() => {
+                setShowModal(false);
+                setEditingUser(null);
+                setForm({ name: "", email: "", password: "" });
+              }}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl font-bold"
               aria-label="Close"
             >
               &times;
             </button>
             <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-              {editingUser ? 'Edit User' : 'Add User'}
+              {editingUser ? "Edit User" : "Add User"}
             </h2>
-            <form onSubmit={editingUser ? handleUpdateUser : handleAddUser} className="space-y-4">
+            <form
+              onSubmit={editingUser ? handleUpdateUser : handleAddUser}
+              className="space-y-4"
+            >
               <div>
                 <input
                   type="text"
@@ -221,21 +244,23 @@ export default function AdminUsersPage() {
                 />
               </div>
               <div>
-               {!editingUser && <input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />}
+                {!editingUser && (
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                )}
               </div>
               <button
                 type="submit"
                 className="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
               >
-                {editingUser ? 'Update User' : 'Add User'}
+                {editingUser ? "Update User" : "Add User"}
               </button>
             </form>
           </div>
@@ -243,4 +268,4 @@ export default function AdminUsersPage() {
       )}
     </div>
   );
-} 
+}

@@ -1,33 +1,34 @@
-'use client';
-import React, { useEffect, useState } from 'react';
+"use client";
+import React, { useEffect, useState } from "react";
+import { BASE_URL } from "../../constants/constant";
 
-const API_URL = 'http://localhost:5000/api/admin/categories';
+const API_URL = `${BASE_URL}/api/admin/categories`;
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', description: '', image: '' });
+  const [form, setForm] = useState({ name: "", description: "", image: "" });
   const [showModal, setShowModal] = useState(false);
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    setToken(localStorage.getItem('token'));
+    setToken(localStorage.getItem("token"));
   }, []);
 
   useEffect(() => {
     if (!token) return;
     fetch(API_URL, {
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     })
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setCategories);
   }, [token]);
 
   const handleAddClick = () => {
     setEditing(null);
-    setForm({ name: '', description: '', image: '' });
+    setForm({ name: "", description: "", image: "" });
     setShowModal(true);
   };
 
@@ -40,55 +41,65 @@ export default function CategoriesPage() {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditing(null);
-    setForm({ name: '', description: '', image: '' });
+    setForm({ name: "", description: "", image: "" });
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this category?')) return;
+    if (!window.confirm("Are you sure you want to delete this category?"))
+      return;
     await fetch(`${API_URL}/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
-    setCategories(categories.filter(c => c._id !== id));
+    setCategories(categories.filter((c) => c._id !== id));
   };
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (editing) {
       const res = await fetch(`${API_URL}/${editing}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(form),
       });
       const updated = await res.json();
-      setCategories(categories.map(c => c._id === editing ? updated : c));
+      setCategories(categories.map((c) => (c._id === editing ? updated : c)));
       setEditing(null);
-      setForm({ name: '', description: '', image: '' });
+      setForm({ name: "", description: "", image: "" });
       setShowModal(false);
     } else {
       const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error('Failed to add category');
+      if (!res.ok) throw new Error("Failed to add category");
       fetch(API_URL, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
-        .then(res => res.json())
+        .then((res) => res.json())
         .then(setCategories);
-      setForm({ name: '', description: '', image: '' });
+      setForm({ name: "", description: "", image: "" });
       setShowModal(false);
     }
   };
 
   return (
     <div className="mx-auto p-8 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold text-purple-600 mb-6">Category Management</h1>
+      <h1 className="text-2xl font-bold text-purple-600 mb-6">
+        Category Management
+      </h1>
       <div className="flex justify-end mb-6">
         <button
           onClick={handleAddClick}
@@ -115,13 +126,19 @@ export default function CategoriesPage() {
                 </td>
               </tr>
             ) : (
-              categories.map(cat => (
+              categories.map((cat) => (
                 <tr
                   key={cat._id}
                   className="border-b last:border-b-0 hover:bg-purple-50 transition-colors"
                 >
                   <td className="py-3 px-6">
-                    {cat.image && <img src={cat.image} alt={cat.name} className="w-16 h-16 object-cover rounded" />}
+                    {cat.image && (
+                      <img
+                        src={cat.image}
+                        alt={cat.name}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                    )}
                   </td>
                   <td className="py-3 px-6">{cat.name}</td>
                   <td className="py-3 px-6">{cat.description}</td>
@@ -157,7 +174,7 @@ export default function CategoriesPage() {
               &times;
             </button>
             <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-              {editing ? 'Edit Category' : 'Add Category'}
+              {editing ? "Edit Category" : "Add Category"}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -195,7 +212,7 @@ export default function CategoriesPage() {
                 type="submit"
                 className="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
               >
-                {editing ? 'Update Category' : 'Add Category'}
+                {editing ? "Update Category" : "Add Category"}
               </button>
             </form>
           </div>
