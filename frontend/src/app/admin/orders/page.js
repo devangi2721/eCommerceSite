@@ -72,13 +72,11 @@ export default function AdminOrdersPage() {
           <table className="min-w-full bg-white rounded-lg">
             <thead>
               <tr className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                <th className="py-3 px-6 text-left rounded-tl-lg">User Name</th>
-                {/* <th className="py-3 px-6 text-left">Product Name</th> */}
-                {/* <th className="py-3 px-6 text-left">Price</th> */}
-                <th className="py-3 px-6 text-left">Category</th>
-                <th className="py-3 px-6 text-left">Image</th>
+                <th className="py-3 px-6 text-left">Order ID</th>
+                <th className="py-3 px-6 text-left">User Name</th>
+                <th className="py-3 px-6 text-left">Order Date</th>
                 <th className="py-3 px-6 text-left">Status</th>
-                <th className="py-3 px-6 text-left rounded-tr-lg">Total Price</th>
+                <th className="py-3 px-6 text-left">Total Price</th>
                 <th className="py-3 px-6 text-left rounded-tr-lg">Actions</th>
                 <th className="py-3 px-6 text-left rounded-tr-lg">View</th>
               </tr>
@@ -93,17 +91,9 @@ export default function AdminOrdersPage() {
               ) : (
                 orders.map(order => (
                   <tr key={order._id} className="border-b last:border-b-0 hover:bg-purple-50 transition-colors">
+                    <td className="py-3 px-6">{order._id}</td>
                     <td className="py-3 px-6">{order.user?.name || '-'}</td>
-                    <td className="py-3 px-6">{order.products[0].product?.category || order.category}</td>
-                    <td className="py-3 px-6">
-                      {order.products[0].product?.image && (
-                        <img 
-                          src={order.products[0].product.image} 
-                          alt={order.products[0].product.name} 
-                          className="w-16 h-16 object-cover rounded shadow-sm"
-                        />
-                      )}
-                    </td>
+                    <td className="py-3 px-6">{order.createdAt.split('T')[0]}</td>
                     <td className="py-3 px-6">
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                         order.status === 'cancelled' 
@@ -117,14 +107,17 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="py-3 px-6">${order.total}</td>
                     <td className="py-3 px-6">
-                      {order.status !== 'cancelled' && (
-                        <button
-                          onClick={() => handleCancel(order._id)}
-                          className="bg-pink-100 text-pink-700 px-3 py-1 rounded-lg font-semibold hover:bg-pink-200 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleCancel(order._id)}
+                        disabled={order.status === 'cancelled'}
+                        className={`px-3 py-1 rounded-lg font-semibold transition-colors ${
+                          order.status === 'cancelled'
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-pink-100 text-pink-700 hover:bg-pink-200'
+                        }`}
+                      >
+                        Cancel
+                      </button>
                     </td>
                     <td className="py-3 px-6">
                       <button

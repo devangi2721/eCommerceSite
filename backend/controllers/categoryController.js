@@ -2,9 +2,6 @@ const Category = require('../models/Category');
 const fs = require('fs');
 const path = require('path');
 
-// Base URL for the application
-const BASE_URL = "http://localhost:5000";
-
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../public/uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -12,7 +9,7 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Get all categories
-exports.getCategories = async (req, res) => {
+const getCategories = async (req, res) => {
   try {
     const categories = await Category.find({isDeleted: { $ne: true }});
     res.json(categories);
@@ -22,7 +19,7 @@ exports.getCategories = async (req, res) => {
 };
 
 // Get all categories
-exports.getCategoriesForUser = async (req, res) => {
+const getCategoriesForUser = async (req, res) => {
   try {
     const categories = await Category.find({isDeleted: { $ne: true }});
     res.json(categories);
@@ -32,7 +29,7 @@ exports.getCategoriesForUser = async (req, res) => {
 };
 
 // Create category
-exports.createCategory = async (req, res) => {
+const createCategory = async (req, res) => {
   try {
     console.log('Request body:', req.body);
     console.log('Request file:', req.file);
@@ -73,7 +70,7 @@ exports.createCategory = async (req, res) => {
 };
 
 // Update category
-exports.updateCategory = async (req, res) => {
+const updateCategory = async (req, res) => {
   try {
     console.log('Update request body:', req.body);
     console.log('Update request file:', req.file);
@@ -121,11 +118,19 @@ exports.updateCategory = async (req, res) => {
 };
 
 // Delete category
-exports.deleteCategory = async (req, res) => {
+const deleteCategory = async (req, res) => {
   try {
     await Category.findByIdAndUpdate(req.params.id, { isDeleted: true });
     res.json({ message: 'Category deleted' });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
+};
+
+module.exports = {
+  getCategories,
+  getCategoriesForUser,
+  createCategory,
+  updateCategory,
+  deleteCategory
 };

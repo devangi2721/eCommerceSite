@@ -1,7 +1,7 @@
 const userService = require('../services/userService');
 
 // GET /api/admin/users
-exports.getUsers = async (req, res) => {
+const getUsers = async (req, res) => {
   try {
     const users = await userService.getAllUsers();
     console.log(users,"users");
@@ -12,7 +12,7 @@ exports.getUsers = async (req, res) => {
 };
 
 // PUT /api/admin/users/:id
-exports.updateUser = async (req, res) => {
+const updateUser = async (req, res) => {
   try {
     const updatedUser = await userService.updateUser(req.params.id, req.body);
     if (!updatedUser) return res.status(404).json({ error: 'User not found' });
@@ -23,7 +23,7 @@ exports.updateUser = async (req, res) => {
 };
 
 // DELETE /api/admin/users/:id (soft delete)
-exports.softDeleteUser = async (req, res) => {
+const softDeleteUser = async (req, res) => {
   try {
     const deletedUser = await userService.softDeleteUser(req.params.id);
     if (!deletedUser) return res.status(404).json({ error: 'User not found' });
@@ -31,4 +31,10 @@ exports.softDeleteUser = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
+};
+
+module.exports = {
+  getUsers,
+  updateUser,
+  softDeleteUser
 };

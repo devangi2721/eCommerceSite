@@ -3,7 +3,7 @@ const Product = require('../models/Product');
 const User = require('../models/User');
 
 // Get all orders with user and product details
-exports.getOrders = async (req, res) => {
+const getOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .populate('user', 'name')
@@ -17,7 +17,7 @@ exports.getOrders = async (req, res) => {
 };
 
 // Cancel an order
-exports.cancelOrder = async (req, res) => {
+const cancelOrder = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ error: 'Order not found' });
@@ -30,7 +30,7 @@ exports.cancelOrder = async (req, res) => {
 };
 
 // Place a new order
-exports.placeOrder = async (req, res) => {
+const placeOrder = async (req, res) => {
   try {
     const userId = req.user && req.user.id;
     if (!userId) {
@@ -54,7 +54,7 @@ exports.placeOrder = async (req, res) => {
 };
 
 // Get order history for a user
-exports.getUserOrders = async (req, res) => {
+const getUserOrders = async (req, res) => {
   try {
     const userId = req.user && req.user.id;
     if (!userId) {
@@ -70,7 +70,7 @@ exports.getUserOrders = async (req, res) => {
 };
 
 // Cancel an order by user
-exports.cancelOrderByUser = async (req, res) => {
+const cancelOrderByUser = async (req, res) => {
   try {
     const userId = req.user && req.user.id;
     if (!userId) {
@@ -89,8 +89,10 @@ exports.cancelOrderByUser = async (req, res) => {
   }
 };
 
-// module.exports = {
-//   getOrders,
-//   cancelOrder,
-//   placeOrder,
-// }; 
+module.exports = {
+  getOrders,
+  cancelOrder,
+  placeOrder,
+  getUserOrders,
+  cancelOrderByUser
+}; 
