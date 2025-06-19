@@ -15,6 +15,8 @@ export default function AdminProductsPage() {
     category: "",
     image: "",
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [token, setToken] = useState(null);
 
@@ -44,6 +46,8 @@ export default function AdminProductsPage() {
   const handleAddClick = () => {
     setEditing(null);
     setForm({ name: "", price: "", category: "", image: "" });
+    setImageFile(null);
+    setImagePreview("");
     setShowModal(true);
   };
 
@@ -55,6 +59,8 @@ export default function AdminProductsPage() {
       category: prod.category,
       image: prod.image,
     });
+    setImageFile(null);
+    setImagePreview(prod.image || "");
     setShowModal(true);
   };
 
@@ -62,6 +68,8 @@ export default function AdminProductsPage() {
     setShowModal(false);
     setEditing(null);
     setForm({ name: "", price: "", category: "", image: "" });
+    setImageFile(null);
+    setImagePreview("");
   };
 
   const handleDelete = async (id) => {
@@ -79,39 +87,131 @@ export default function AdminProductsPage() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleClearImage = () => {
+    setImageFile(null);
+    setImagePreview("");
+    // Reset the file input
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (editing) {
-      const res = await fetch(`${API_URL}/${editing}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(form),
-      });
-      const updated = await res.json();
-      setProducts(products.map((p) => (p._id === editing ? updated : p)));
+      // For editing, we'll use JSON if no new image, or FormData if there's a new image
+      if (imageFile) {
+        // Send with FormData if there's a new image file
+        const formData = new FormData();
+        formData.append('name', form.name);
+        formData.append('price', form.price);
+        formData.append('category', form.category);
+        formData.append('image', imageFile);
+        
+        const res = await fetch(`${API_URL}/${editing}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Failed to update product: ${res.status} ${errorText}`);
+        }
+        
+        const updated = await res.json();
+        setProducts(products.map((p) => (p._id === editing ? updated : p)));
+      } else {
+        // Send as JSON if no new image file
+        const res = await fetch(`${API_URL}/${editing}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: form.name,
+            price: form.price,
+            category: form.category,
+            image: form.image
+          }),
+        });
+        const updated = await res.json();
+        setProducts(products.map((p) => (p._id === editing ? updated : p)));
+      }
+      
       setEditing(null);
       setForm({ name: "", price: "", category: "", image: "" });
+      setImageFile(null);
+      setImagePreview("");
       setShowModal(false);
     } else {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) throw new Error("Failed to add product");
+      // For creating new product
+      if (imageFile) {
+        // Send with FormData if there's an image file
+        const formData = new FormData();
+        formData.append('name', form.name);
+        formData.append('price', form.price);
+        formData.append('category', form.category);
+        formData.append('image', imageFile);
+        
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Failed to add product: ${res.status} ${errorText}`);
+        }
+      } else {
+        // Send as JSON if no image file
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: form.name,
+            price: form.price,
+            category: form.category,
+            image: form.image
+          }),
+        });
+        if (!res.ok) throw new Error("Failed to add product");
+      }
+      
+      // Refresh the products list
       fetch(API_URL, {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
         .then(setProducts);
+      
       setForm({ name: "", price: "", category: "", image: "" });
+      setImageFile(null);
+      setImagePreview("");
       setShowModal(false);
     }
   };
@@ -156,7 +256,7 @@ export default function AdminProductsPage() {
                   <td className="py-3 px-6">
                     {prod.image && (
                       <img
-                        src={prod.image}
+                        src={prod.image.startsWith('http') ? prod.image : `${BASE_URL}${prod.image}`}
                         alt={prod.name}
                         className="w-16 h-16 object-cover rounded"
                       />
@@ -188,7 +288,7 @@ export default function AdminProductsPage() {
       {/* Modal for Add/Edit Product */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-          <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md relative">
+          <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md relative overflow-hidden">
             <button
               onClick={handleCloseModal}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl font-bold"
@@ -239,14 +339,60 @@ export default function AdminProductsPage() {
                 </select>
               </div>
               <div>
-                <input
-                  type="text"
-                  name="image"
-                  placeholder="Image URL"
-                  value={form.image}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Product Image
+                </label>
+                <div className="space-y-3">
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="file"
+                      name="image"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                    />
+                  </div>
+                  {imagePreview && (
+                    <div className="mt-3 relative">
+                      <p className="text-sm text-gray-600 mb-2">Preview:</p>
+                      <div className="relative inline-block">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-32 h-32 object-cover rounded-lg border border-gray-300"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleClearImage}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors text-sm"
+                          title="Remove image"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {!imagePreview && form.image && (
+                    <div className="mt-3 relative">
+                      <p className="text-sm text-gray-600 mb-2">Current Image:</p>
+                      <div className="relative inline-block">
+                        <img
+                          src={form.image}
+                          alt="Current"
+                          className="w-32 h-32 object-cover rounded-lg border border-gray-300"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleClearImage}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors text-sm"
+                          title="Remove image"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               <button
                 type="submit"

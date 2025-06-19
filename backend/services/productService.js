@@ -1,15 +1,15 @@
 const Product = require('../models/Product');
 
-const createProductService = async ({ name, description, price, image ,category }) => {
-  const product = new Product({ name, description, price, image ,category });
+const createProductService = async ({ name, price, image, category }) => {
+  const product = new Product({ name, price, image, category });
   await product.save();
   return product;
 };
 
-const updateProductService = async (id, { name, description, price, image }) => {
+const updateProductService = async (id, { name, price, image, category }) => {
   const product = await Product.findByIdAndUpdate(
     id,
-    { name, description, price, image },
+    { name, price, image, category },
     { new: true }
   );
   return product;

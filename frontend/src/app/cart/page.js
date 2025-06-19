@@ -124,7 +124,22 @@ export default function Cart() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <div className="h-20 w-20 bg-gray-200 rounded"></div>
+                        {item.image ? (
+                          <img
+                            src={item.image.startsWith('http') ? item.image : `${BASE_URL}${item.image}`}
+                            alt={item.name}
+                            className="h-20 w-20 object-cover rounded"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className={`h-20 w-20 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500 ${item.image ? 'hidden' : 'flex'}`}
+                        >
+                          No Image
+                        </div>
                         <div>
                           <h3 className="font-semibold text-lg">{item.name}</h3>
                           <p className="text-gray-600">{item.category}</p>

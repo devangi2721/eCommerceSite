@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../redux/slices/cartSlice";
 import { BASE_URL } from "../constants/constant";
+import Image from "next/image";
 
 export default function Products() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function Products() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sortBy, setSortBy] = useState("");
 
   useEffect(() => {
     // Fetch categories
@@ -55,6 +57,8 @@ export default function Products() {
     const category = searchParams.get("category");
     if (category) {
       setSelectedCategory(category);
+    } else {
+      setSelectedCategory("");
     }
   }, [searchParams]);
 
@@ -66,10 +70,14 @@ export default function Products() {
     const category = e.target.value;
     setSelectedCategory(category);
     if (category) {
-      router.push(`/products?category=${category}`);
+      router.push(`/products?category=${encodeURIComponent(category)}`);
     } else {
       router.push("/products");
     }
+  };
+
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
   };
 
   const filteredProducts = selectedCategory
@@ -79,6 +87,18 @@ export default function Products() {
           product.category.toLowerCase() === selectedCategory.toLowerCase()
       )
     : products;
+
+  // Sort products based on selected sort option
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortBy) {
+      case "price-low":
+        return a.price - b.price;
+      case "price-high":
+        return b.price - a.price;
+      default:
+        return 0;
+    }
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -107,9 +127,14 @@ export default function Products() {
               </svg>
             </button>
             <div>
-              <h1 className="text-4xl font-bold text-gray-800">Our Products</h1>
+              <h1 className="text-4xl font-bold text-gray-800">
+                {selectedCategory ? `${selectedCategory} Products` : "Our Products"}
+              </h1>
               <p className="text-gray-600 mt-2">
-                Discover our amazing collection of products
+                {selectedCategory 
+                  ? `Discover our amazing collection of ${selectedCategory} products`
+                  : "Discover our amazing collection of products"
+                }
               </p>
             </div>
           </div>
@@ -117,7 +142,7 @@ export default function Products() {
 
         {/* Filters */}
         <div className="max-w-7xl mx-auto mb-8">
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
             <select
               value={selectedCategory}
               onChange={handleCategoryChange}
@@ -130,12 +155,20 @@ export default function Products() {
                 </option>
               ))}
             </select>
-            <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <select 
+              value={sortBy}
+              onChange={handleSortChange}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
               <option value="">Sort By</option>
               <option value="price-low">Price: Low to High</option>
               <option value="price-high">Price: High to Low</option>
-              <option value="name">Name</option>
             </select>
+            {selectedCategory && (
+              <span className="text-sm text-gray-600">
+                {sortedProducts.length} product{sortedProducts.length !== 1 ? 's' : ''} found
+              </span>
+            )}
           </div>
         </div>
 
@@ -145,9 +178,14 @@ export default function Products() {
             <div className="text-center">Loading products...</div>
           ) : error ? (
             <div className="text-center text-red-500">{error}</div>
-          ) : filteredProducts.length === 0 ? (
+          ) : sortedProducts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-600 text-lg">No products found in this category</p>
+              <p className="text-gray-600 text-lg">
+                {selectedCategory 
+                  ? `No products found in the "${selectedCategory}" category`
+                  : "No products found"
+                }
+              </p>
               <button
                 onClick={() => {
                   setSelectedCategory('');
@@ -160,7 +198,7 @@ export default function Products() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
+              {sortedProducts.map((product) => (
                 <div
                   key={product._id}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
@@ -168,10 +206,11 @@ export default function Products() {
                   <div className="h-48 bg-gray-200 relative">
                     {/* Add actual product image here */}
                     {product.image ? (
-                      <img
-                        src={product.image}
+                      <Image
+                        src={product.image.startsWith('http') ? product.image : `${BASE_URL}${product.image}`}
                         alt={product.name}
-                        className="object-cover w-full h-full"
+                        fill
+                        className="object-cover"
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center text-gray-400">

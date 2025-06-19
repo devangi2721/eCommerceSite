@@ -31,6 +31,7 @@ export default function Home() {
           throw new Error("Failed to fetch categories");
         }
         const data = await response.json();
+        console.log(data);
         setCategories(data);
       } catch (err) {
         setError(err.message);
@@ -57,6 +58,7 @@ export default function Home() {
           throw new Error("Failed to fetch featured products");
         }
         const data = await response.json();
+        console.log(data);
         setFeaturedProducts(data);
       } catch (err) {
         setErrorFeatured(err.message);
@@ -80,7 +82,7 @@ export default function Home() {
   };
 
   const handleCategoryClick = (category) => {
-    router.push(`/products?category=${category.toLowerCase()}`);
+    router.push(`/products?category=${encodeURIComponent(category.toLowerCase())}`);
   };
 
   const handleLogout = () => {
@@ -95,18 +97,28 @@ export default function Home() {
       <div className="pt-16">
         {/* Hero Section */}
         <section className="relative h-[600px] flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500">
-          <div className="absolute inset-0 bg-black/30" />
+          {/* Banner Image Background */}
+          <Image
+            src="/banner1.jpg"
+            alt="Store Banner"
+            fill
+            className="absolute inset-0 object-cover"
+            priority
+          />
           <div className="relative z-10 text-center text-white px-4">
-            <h1 className="text-5xl font-bold mb-4">Welcome to Our Store</h1>
+            {/* <h1 className="text-5xl font-bold mb-4">Welcome to Our Store</h1>
             <p className="text-xl mb-8">
               Discover amazing products at great prices
-            </p>
-            <button
+            </p> */}
+            {/* <button
               onClick={() => router.push("/products")}
-              className="bg-white text-purple-600 px-8 py-3 rounded-full font-semibold hover:bg-purple-100 transition-colors"
+              className="group bg-white text-purple-600 px-8 py-4 rounded-full font-semibold hover:bg-purple-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 mx-auto"
             >
-              Shop Now
-            </button>
+              <span>Shop Now</span>
+              <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button> */}
           </div>
         </section>
 
@@ -120,41 +132,61 @@ export default function Home() {
           ) : error ? (
             <div className="text-center text-red-500">{error}</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {categories.map((category) => (
-                <div
-                  key={category._id}
-                  onClick={() => handleCategoryClick(category.name)}
-                  className="relative h-64 rounded-lg overflow-hidden group cursor-pointer bg-gradient-to-r from-purple-500 to-pink-500"
-                >
-                  {category.image && (
-                    <Image
-                      src={category.image}
-                      alt={category.name}
-                      layout="fill"
-                      objectFit="cover"
-                      className="absolute inset-0"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-                    <h3 className="text-2xl font-semibold mb-2">
-                      {category.name}
-                    </h3>
-                    {category.description && (
-                      <p className="text-sm text-center px-4">
-                        {category.description}
-                      </p>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                {categories.map((category) => (
+                  <div
+                    key={category._id}
+                    onClick={() => handleCategoryClick(category.name)}
+                    className="relative h-64 rounded-lg overflow-hidden group cursor-pointer bg-gradient-to-r from-purple-500 to-pink-500"
+                  >
+                    {category.image && (
+                      <Image
+                        src={category.image.startsWith('http') ? category.image : `${BASE_URL}${category.image}`}
+                        alt={category.name}
+                        fill
+                        className="absolute inset-0 object-cover"
+                      />
                     )}
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                      <h3 className="text-2xl font-semibold mb-2">
+                        {category.name}
+                      </h3>
+                      {category.description && (
+                        <p className="text-sm text-center px-4">
+                          {category.description}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              
+              {/* Shop Now Button for Categories Section */}
+              <div className="text-center">
+                <button
+                  onClick={() => router.push("/products")}
+                  className="group bg-gradient-to-r from-purple-600 to-pink-600 text-white px-10 py-4 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-3 mx-auto"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                  <span>Explore All Products</span>
+                  <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+                <p className="text-gray-600 mt-4 text-sm">
+                  Can't decide? Browse our complete collection
+                </p>
+              </div>
+            </>
           )}
         </section>
 
         {/* Featured Products Section */}
-        <section className="py-16 px-4 bg-gray-50">
+        <section className="pb-16 px-4 bg-gray-50">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12">
               Featured Products
@@ -166,6 +198,7 @@ export default function Home() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                 {featuredProducts.map((product) => (
+                  
                   <div
                     key={product._id}
                     className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
@@ -173,11 +206,10 @@ export default function Home() {
                     <div className="h-48 bg-gray-200 relative">
                       {product.image ? (
                         <Image
-                          src={product.image}
+                          src={product.image.startsWith('http') ? product.image : `${BASE_URL}${product.image}`}
                           alt={product.name}
-                          layout="fill"
-                          objectFit="cover"
-                          className="absolute inset-0"
+                          fill
+                          className="absolute inset-0 object-cover"
                         />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-gray-400">

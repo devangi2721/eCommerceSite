@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 const authRoutes = require('./routes/auth');
 const connectDB = require('./config/db');
 const adminRoutes = require('./routes/admin');
@@ -18,6 +19,9 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Serve static files from public/uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Connect Database
 connectDB();

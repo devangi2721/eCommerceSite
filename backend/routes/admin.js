@@ -6,6 +6,35 @@ const productController = require('../controllers/productController');
 const categoryController = require('../controllers/categoryController');
 const orderController = require('../controllers/orderController');
 const userController = require('../controllers/userController');
+const multer = require('multer');
+const path = require('path');
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/') // Temporary storage, will be moved to public/uploads
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname)
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  // Accept only image files
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
 
 // Example admin-only route
 router.get('/dashboard', auth, adminOnly, adminDashboardController);
@@ -16,16 +45,17 @@ router.put('/users/:id', auth, adminOnly, userController.updateUser);
 router.delete('/users/:id', auth, adminOnly, userController.softDeleteUser);
 
 // Product CRUD routes (admin only)
-router.post('/products', auth, adminOnly, productController.createProduct);
+router.post('/products', auth, adminOnly, upload.single('image'), productController.createProduct);
 router.get('/products', auth, adminOnly, productController.getProducts);
 router.get('/products/:id', auth, adminOnly, productController.getProductById);
-router.put('/products/:id', auth, adminOnly, productController.updateProduct);
+router.put('/products/:id', auth, adminOnly, upload.single('image'), productController.updateProduct);
 router.delete('/products/:id', auth, adminOnly, productController.deleteProduct);
 
 // Category CRUD routes (admin only)
-router.get('/categories',  categoryController.getCategories);
-router.post('/categories', auth, adminOnly, categoryController.createCategory);
-router.put('/categories/:id', auth, adminOnly, categoryController.updateCategory);
+router.get('/categories', categoryController.getCategories);
+router.post('/categories', auth, adminOnly, upload.single('image'), categoryController.createCategory);
+router.put('/categories/:id', auth, adminOnly, upload.single('image'),
+    categoryController.updateCategory);
 router.delete('/categories/:id', auth, adminOnly, categoryController.deleteCategory);
 
 // Order CRUD routes (admin only)

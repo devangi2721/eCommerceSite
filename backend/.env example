@@ -1,0 +1,4 @@
+PORT=5000
+MONGODB_URL=mongodb+srv://devangi:Devu12345@clustero.jstquaz.mongodb.net/eCommerce_db
+JWT_SECRET=secret
+JWT_EXPIRES_IN=3600
